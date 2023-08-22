@@ -1,10 +1,10 @@
 --cpu Cortex-M3
 "dht11_lcd_i2c\startup_stm32f103xb.o"
+"dht11_lcd_i2c\i2c-lcd.o"
+"dht11_lcd_i2c\dc_motor_fun.o"
 "dht11_lcd_i2c\main.o"
 "dht11_lcd_i2c\stm32f1xx_it.o"
 "dht11_lcd_i2c\stm32f1xx_hal_msp.o"
-"dht11_lcd_i2c\i2c-lcd.o"
-"dht11_lcd_i2c\dc_motor_fun.o"
 "dht11_lcd_i2c\stm32f1xx_hal_gpio_ex.o"
 "dht11_lcd_i2c\stm32f1xx_hal_adc.o"
 "dht11_lcd_i2c\stm32f1xx_hal_adc_ex.o"
