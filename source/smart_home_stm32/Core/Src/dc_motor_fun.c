@@ -10,10 +10,10 @@ void delay(uint16_t time){
 }
 void pwm_DC_motor(float temp){
 	uint16_t cycle;
-		if(temp > 27 && temp < 35){
-			cycle = 300;
+		if(temp > 30 && temp < 35){
+			cycle = 700;
 		} else if(temp >= 35){
-			cycle = 500;
+			cycle = 900;
 		} else cycle = 0;
 		__HAL_TIM_SetCompare(&htim3,TIM_CHANNEL_1,cycle);
 };

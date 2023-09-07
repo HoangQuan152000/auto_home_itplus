@@ -39,7 +39,7 @@
 
 /* Private macro -------------------------------------------------------------*/
 /* USER CODE BEGIN PM */
-// he lo anh em
+
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
@@ -64,8 +64,8 @@ float Temperature = 0;
 float Humidity= 0;
 uint8_t Presence = 0;
 // bien chuc nang cam bien hong ngoai
-uint8_t done_ccv;
-uint8_t done_cv;
+volatile static uint8_t flag_door;
+volatile static uint8_t  done_close;
 // bien chuc nang cam bien chuyen dong
 
 uint8_t flag_move = 0;
@@ -87,13 +87,14 @@ void Display_Rh (float Rh);
 void Set_Pin_Output(GPIO_TypeDef *GPIOx, uint16_t GPIO_Pin);
 void Set_Pin_Input (GPIO_TypeDef *GPIOx, uint16_t GPIO_Pin);
 void DHT11_Start (void);
-uint8_t Check_Response(void);
+uint8_t DHT11_Check_Response(void);
 uint8_t DHT11_Read (void);
 
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
   /* Prevent unused argument(s) compilation warning */
@@ -121,13 +122,24 @@ HAL_GPIO_TogglePin(GPIOC,GPIO_PIN_14);
 	} else readValue = 3900;
 }
 	// xu ly ngat cho cam bien hong ngoai
-	if(GPIO_Pin == BUTTON_DOOR_Pin){
-		if(done_ccv){
-		stepCV(1024,1000);	
-		}
-		if(done_cv){
-		stepCCV(1024,1000);
-		} 
+	if(GPIO_Pin == BUTTON_DOOR_1_Pin){
+			if(flag_door == 0){
+				flag_door = 1;
+				stepCCV(512,1000);
+			} else if(flag_door == 1){
+			stepCV(512,1000);
+				flag_door = 0;
+			}
+			
+}
+		if(GPIO_Pin == BUTTON_DOOR_2_Pin){
+				if(flag_door == 0){
+				flag_door = 1;
+				stepCCV(512,1000);
+			} else if(flag_door == 1){
+			stepCV(512,1000);
+				flag_door = 0;
+			}
 	}
 	// xu ly ngat cho cam bien chuyen dong
 	if(GPIO_Pin == BUTTON_MOVE_Pin){
@@ -176,12 +188,12 @@ int main(void)
 	HAL_TIM_PWM_Start(&htim3,TIM_CHANNEL_1);
 	HAL_TIM_Base_Start(&htim4);
 	HAL_ADC_Start(&hadc1);
-	/*
-  lcd_init();
-  lcd_send_string("Hello cac ban");
-  HAL_Delay(1000);
-  lcd_clear ();
-	*/
+	
+  //lcd_init();
+ // lcd_send_string("INITIALISING>>>>");
+ // HAL_Delay(2000);
+ // lcd_clear ();
+	
 	
 	
   /* USER CODE END 2 */
@@ -194,13 +206,12 @@ int main(void)
 
     /* USER CODE BEGIN 3 */
 			// xu ly cam bien nhiet do
-		//Display_Temp(Temperature);
-	 //Display_Rh(Humidity);
+		
 		
 		DHT11_Start();
 		
-	  Presence = Check_Response();
-		
+	  Presence = DHT11_Check_Response ();
+		HAL_GPIO_TogglePin(GPIOC,GPIO_PIN_13);
 	  Rh_byte1 = DHT11_Read (); // doc gia tri 8 bit du lieu dau tien
 	  Rh_byte2 = DHT11_Read (); // doc gia tri 8 bit du lieu thu hai
 	  Temp_byte1 = DHT11_Read ();
@@ -212,9 +223,14 @@ int main(void)
 		
 	  Temperature = (float) TEMP;
 	  Humidity = (float) RH;
+		Display_Temp(Temperature);
+		Display_Rh(Humidity);
+		
 		if(flag_fan == 0){
 		pwm_DC_motor(Temperature);
 		}
+		
+		
 		// xu ly cam bien anh sang
 		if(flag_light == 0){
 			HAL_ADC_PollForConversion(&hadc1,1000);
@@ -232,25 +248,34 @@ int main(void)
 			}
 		} 
 	}
-		/*
+		
+		
 			// xu ly cam bien hong ngoai
-		if(HAL_GPIO_ReadPin(INFRARED_1_GPIO_Port,INFRARED_1_Pin) == 0){
-			HAL_Delay(1000);
-			if(HAL_GPIO_ReadPin(INFRARED_1_GPIO_Port,INFRARED_1_Pin) == 0){
-				done_ccv =1;
-				done_cv = 0;
-				stepCCV(1024,1000);
-			};
+		if(flag_door == 0){
+		if(HAL_GPIO_ReadPin(INFRARED_1_GPIO_Port,INFRARED_1_Pin)==0){
+				HAL_Delay(1000);
+				if(HAL_GPIO_ReadPin(INFRARED_1_GPIO_Port,INFRARED_1_Pin)==0){
+					
+					stepCCV(512,1000);
+						while(HAL_GPIO_ReadPin(INFRARED_1_GPIO_Port,INFRARED_1_Pin)==0){}	
+					stepCV(512,1000);
+					done_close = 1;
+				
+					}	
+				} else if(HAL_GPIO_ReadPin(INFRARED_2_GPIO_Port,INFRARED_2_Pin)==0){
+				HAL_Delay(1000);
+				if(HAL_GPIO_ReadPin(INFRARED_2_GPIO_Port,INFRARED_2_Pin)==0){
+					stepCCV(512,1000);
+						while(HAL_GPIO_ReadPin(INFRARED_2_GPIO_Port,INFRARED_2_Pin)==0){}
+					stepCV(512,1000);
+					done_close = 1;
+		
+					}	
+			}
 		}
-			if(HAL_GPIO_ReadPin(INFRARED_2_GPIO_Port,INFRARED_2_Pin) == 0){
-			HAL_Delay(1000);
-			if(HAL_GPIO_ReadPin(INFRARED_2_GPIO_Port,INFRARED_2_Pin) == 0){
-				done_ccv =0;
-				done_cv = 1;
-				stepCV(1024,1000);
-			};
-		}
-		*/
+			
+		
+		
 		// xu ly cam bien chuyen dong
 			if(HAL_GPIO_ReadPin(MOVE_SS_GPIO_Port,MOVE_SS_Pin) == 1){
 				if(flag_move == 0){
@@ -379,7 +404,7 @@ static void MX_I2C1_Init(void)
   hi2c1.Instance = I2C1;
   hi2c1.Init.ClockSpeed = 100000;
   hi2c1.Init.DutyCycle = I2C_DUTYCYCLE_2;
-  hi2c1.Init.OwnAddress1 = 0;
+  hi2c1.Init.OwnAddress1 = 156;
   hi2c1.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
   hi2c1.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
   hi2c1.Init.OwnAddress2 = 0;
@@ -517,13 +542,19 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOB_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13|GPIO_PIN_14, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOA, DHT11_Pin|IN2_Pin|GPIO_PIN_15, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_14, GPIO_PIN_SET);
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(GPIOA, DHT11_Pin|IN2_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOB, STEP_IN1_Pin|STEP_IN2_Pin|STEP_IN3_Pin|STEP_IN4_Pin, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_15, GPIO_PIN_SET);
 
   /*Configure GPIO pins : PC13 PC14 */
   GPIO_InitStruct.Pin = GPIO_PIN_13|GPIO_PIN_14;
@@ -551,8 +582,10 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : BUTTON_MOVE_Pin BUTTON_DOOR_Pin BUTTON_LIGHT_Pin BUTTON_FAN_Pin */
-  GPIO_InitStruct.Pin = BUTTON_MOVE_Pin|BUTTON_DOOR_Pin|BUTTON_LIGHT_Pin|BUTTON_FAN_Pin;
+  /*Configure GPIO pins : BUTTON_MOVE_Pin BUTTON_DOOR_1_Pin BUTTON_LIGHT_Pin BUTTON_FAN_Pin
+                           BUTTON_DOOR_2_Pin */
+  GPIO_InitStruct.Pin = BUTTON_MOVE_Pin|BUTTON_DOOR_1_Pin|BUTTON_LIGHT_Pin|BUTTON_FAN_Pin
+                          |BUTTON_DOOR_2_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
   GPIO_InitStruct.Pull = GPIO_PULLUP;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
@@ -582,6 +615,9 @@ static void MX_GPIO_Init(void)
 
   HAL_NVIC_SetPriority(EXTI9_5_IRQn, 0, 0);
   HAL_NVIC_EnableIRQ(EXTI9_5_IRQn);
+
+  HAL_NVIC_SetPriority(EXTI15_10_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
 
 /* USER CODE BEGIN MX_GPIO_Init_2 */
 /* USER CODE END MX_GPIO_Init_2 */
@@ -637,7 +673,7 @@ void DHT11_Start (void)
 	Set_Pin_Input(DHT11_PORT, DHT11_PIN);    // set as input
 }
 
-uint8_t Check_Response (void)
+uint8_t DHT11_Check_Response (void)
 {
 	uint8_t Response = 0;
 	delay (40);
@@ -645,7 +681,7 @@ uint8_t Check_Response (void)
 	{
 		delay (80);
 		if ((HAL_GPIO_ReadPin (DHT11_PORT, DHT11_PIN))) Response = 1;
-		else Response = -1;
+		else Response = -1; // 255
 	}
 	while ((HAL_GPIO_ReadPin (DHT11_PORT, DHT11_PIN)));   // wait for the pin to go low
 

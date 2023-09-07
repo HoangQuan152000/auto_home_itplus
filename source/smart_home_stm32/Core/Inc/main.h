@@ -68,9 +68,9 @@ void Error_Handler(void);
 #define BUTTON_MOVE_Pin GPIO_PIN_2
 #define BUTTON_MOVE_GPIO_Port GPIOA
 #define BUTTON_MOVE_EXTI_IRQn EXTI2_IRQn
-#define BUTTON_DOOR_Pin GPIO_PIN_3
-#define BUTTON_DOOR_GPIO_Port GPIOA
-#define BUTTON_DOOR_EXTI_IRQn EXTI3_IRQn
+#define BUTTON_DOOR_1_Pin GPIO_PIN_3
+#define BUTTON_DOOR_1_GPIO_Port GPIOA
+#define BUTTON_DOOR_1_EXTI_IRQn EXTI3_IRQn
 #define BUTTON_LIGHT_Pin GPIO_PIN_4
 #define BUTTON_LIGHT_GPIO_Port GPIOA
 #define BUTTON_LIGHT_EXTI_IRQn EXTI4_IRQn
@@ -89,6 +89,9 @@ void Error_Handler(void);
 #define STEP_IN3_GPIO_Port GPIOB
 #define STEP_IN4_Pin GPIO_PIN_15
 #define STEP_IN4_GPIO_Port GPIOB
+#define BUTTON_DOOR_2_Pin GPIO_PIN_10
+#define BUTTON_DOOR_2_GPIO_Port GPIOA
+#define BUTTON_DOOR_2_EXTI_IRQn EXTI15_10_IRQn
 
 /* USER CODE BEGIN Private defines */
 
