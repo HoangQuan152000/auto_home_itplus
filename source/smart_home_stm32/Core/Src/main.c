@@ -104,8 +104,8 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 	// xu ly ngat cho cam bien nhiet va quat
  if(GPIO_Pin == BUTTON_FAN_Pin){
 	 if(flag_fan == 0){
-	 if(Temperature <= 27){
-		 duty_cycle = 300;
+	 if(Temperature <= 32){
+		 duty_cycle = 600;
 	 } else duty_cycle = 0;
 	 __HAL_TIM_SetCompare(&htim3,TIM_CHANNEL_1,duty_cycle);
 	 flag_fan = 1;
@@ -125,9 +125,9 @@ HAL_GPIO_TogglePin(GPIOC,GPIO_PIN_14);
 	if(GPIO_Pin == BUTTON_DOOR_1_Pin){
 			if(flag_door == 0){
 				flag_door = 1;
-				stepCCV(512,1000);
+				stepCCV(1536,1000);
 			} else if(flag_door == 1){
-			stepCV(512,1000);
+			stepCV(1536,1000);
 				flag_door = 0;
 			}
 			
@@ -135,9 +135,9 @@ HAL_GPIO_TogglePin(GPIOC,GPIO_PIN_14);
 		if(GPIO_Pin == BUTTON_DOOR_2_Pin){
 				if(flag_door == 0){
 				flag_door = 1;
-				stepCCV(512,1000);
+				stepCCV(1536,1000);
 			} else if(flag_door == 1){
-			stepCV(512,1000);
+			stepCV(1536,1000);
 				flag_door = 0;
 			}
 	}
@@ -188,12 +188,12 @@ int main(void)
 	HAL_TIM_PWM_Start(&htim3,TIM_CHANNEL_1);
 	HAL_TIM_Base_Start(&htim4);
 	HAL_ADC_Start(&hadc1);
-	
-  //lcd_init();
- // lcd_send_string("INITIALISING>>>>");
- // HAL_Delay(2000);
- // lcd_clear ();
-	
+	/*
+  lcd_init();
+  lcd_send_string("INITIALISING>>>>");
+  HAL_Delay(2000);
+  lcd_clear ();
+	*/
 	
 	
   /* USER CODE END 2 */
@@ -256,18 +256,18 @@ int main(void)
 				HAL_Delay(1000);
 				if(HAL_GPIO_ReadPin(INFRARED_1_GPIO_Port,INFRARED_1_Pin)==0){
 					
-					stepCCV(512,1000);
+					stepCCV(1536,1000);
 						while(HAL_GPIO_ReadPin(INFRARED_1_GPIO_Port,INFRARED_1_Pin)==0){}	
-					stepCV(512,1000);
+					stepCV(1536,1000);
 					done_close = 1;
 				
 					}	
 				} else if(HAL_GPIO_ReadPin(INFRARED_2_GPIO_Port,INFRARED_2_Pin)==0){
 				HAL_Delay(1000);
 				if(HAL_GPIO_ReadPin(INFRARED_2_GPIO_Port,INFRARED_2_Pin)==0){
-					stepCCV(512,1000);
+					stepCCV(1536,1000);
 						while(HAL_GPIO_ReadPin(INFRARED_2_GPIO_Port,INFRARED_2_Pin)==0){}
-					stepCV(512,1000);
+					stepCV(1536,1000);
 					done_close = 1;
 		
 					}	

@@ -10,7 +10,7 @@ void delay(uint16_t time){
 }
 void pwm_DC_motor(float temp){
 	uint16_t cycle;
-		if(temp > 30 && temp < 35){
+		if(temp > 32 && temp < 35){
 			cycle = 700;
 		} else if(temp >= 35){
 			cycle = 900;
